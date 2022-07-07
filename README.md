@@ -17,12 +17,14 @@ backups of particular directories.
 ## Usage
 
 ```
-Usage: mkbackup [OPTION] ...
+Usage: mkbackup [OPTION]... DIRECTORY
+
+Description:
+  Create a compressed backup of target DIRECTORY.
 
 Options:
-  -t <directory>  Target directory to backup. (default=current directory)
   -o <directory>  Output directory of backup file. (default=current directory)
-  -l <name>       Name of prefix used to label backup file. (default=backup)
+  -l <name>       Name of prefix used to label backup file. (default='backup')
   -n <int>        The maximum number of backup files to keep. Files beyond
                   the limit will be automatically deleted. (default=10)
 ```
@@ -31,7 +33,7 @@ Options:
 ## Example
 
 ```
-$ mkbackup -t app -o ~/backups -n 10
+$ mkbackup -o ~/backups -n 10 myapp
 
 Archiving files ...
 ...
@@ -39,7 +41,7 @@ Archiving files ...
 Created backup: /home/user/backup-20220707-180000.tar.gz
 ```
 
-This will create a backup file of the `app` directory, placing it in a folder
+This will create a backup file of the `myapp` directory, placing it in a folder
 called `backups`. Only the latest `10` backup files will be kept. (i.e. any
 backup files beyond `10` will be removed).
 
