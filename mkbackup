@@ -1,0 +1,99 @@
+#!/bin/bash
+
+#
+# Constants
+#
+script=$0
+
+#
+# Defaults
+#
+backup_target_dir=.
+backup_output_dir=.
+backup_prefix=backup
+backup_count=10
+
+function show_usage {
+  HELP=$(cat <<_HELP
+Usage: $(basename $script) [OPTION] ...
+
+Options:
+  -t <directory>  Target directory to backup. (default=current directory)
+  -o <directory>  Output directory of backup file. (default=current directory)
+  -l <name>       Name of prefix used to label backup file. (default='$backup_prefix')
+  -n <int>        The maximum number of backup files to keep. Files beyond
+                  the limit will be automatically deleted. (default=$backup_count)
+
+_HELP
+)
+  echo "$HELP"
+}
+
+#
+# Parse options
+#
+optstring=':t:o:l:n:h'
+while getopts $optstring opt; do
+  case "$opt" in
+
+    t)
+      backup_target_dir=$OPTARG
+      ;;
+
+    o)
+      backup_output_dir=$OPTARG
+      ;;
+
+    l)
+      backup_prefix=$OPTARG
+      ;;
+
+    n)
+      backup_count=$OPTARG
+      if ! [[ "$backup_count" =~ ^[0-9]+$ ]]; then
+        echo "Option -$opt be an integer: $OPTARG"
+        echo
+        show_usage
+        exit 1
+      fi
+      ;;
+
+    h)
+      show_usage
+      exit 0
+      ;;
+
+    :)
+      echo "Option is missing an argument: -$OPTARG"
+      exit 1
+      ;;
+
+    ?)
+      echo "Invalid option: -$OPTARG"
+      echo
+      show_usage
+      exit 2
+      ;;
+  esac
+done
+
+backup_file=$backup_output_dir/${backup_prefix}-$(date +'%Y%m%d-%H%M%S').tar.gz
+backup_pattern=$backup_output_dir/${backup_prefix}-*.tar.gz
+
+if [ -f $backup_file ]; then
+  echo "Oops, file $backup_file already exists. Try again."
+  exit 1
+fi
+
+# Create a backup
+echo Archiving files ...
+tar -C $backup_target_dir --exclude="$backup_pattern" -z -c -v -f $backup_file .
+chown $(id -u):$(id -g) $backup_file
+
+echo
+echo Created backup: $backup_file
+
+# Remove old files
+ls --sort=time $backup_pattern | \
+  tail -n +$((backup_count+1)) | \
+  xargs --delimiter '\n' rm -f
