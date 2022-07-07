@@ -8,17 +8,18 @@ script=$0
 #
 # Defaults
 #
-backup_target_dir=.
 backup_output_dir=.
 backup_prefix=backup
 backup_count=10
 
 function show_usage {
   HELP=$(cat <<_HELP
-Usage: $(basename $script) [OPTION] ...
+Usage: $(basename $script) [OPTION]... DIRECTORY
+
+Description:
+  Create a compressed backup of target DIRECTORY.
 
 Options:
-  -t <directory>  Target directory to backup. (default=current directory)
   -o <directory>  Output directory of backup file. (default=current directory)
   -l <name>       Name of prefix used to label backup file. (default='$backup_prefix')
   -n <int>        The maximum number of backup files to keep. Files beyond
@@ -32,13 +33,9 @@ _HELP
 #
 # Parse options
 #
-optstring=':t:o:l:n:h'
+optstring=':o:l:n:h'
 while getopts $optstring opt; do
   case "$opt" in
-
-    t)
-      backup_target_dir=$OPTARG
-      ;;
 
     o)
       backup_output_dir=$OPTARG
@@ -76,6 +73,15 @@ while getopts $optstring opt; do
       ;;
   esac
 done
+
+shift $(expr $OPTIND - 1)
+
+if [ -z "$1" ]; then
+  echo "Target DIRECTORY was not specified. Try again."
+  exit 1
+fi
+
+backup_target_dir=$1
 
 backup_file=$backup_output_dir/${backup_prefix}-$(date +'%Y%m%d-%H%M%S').tar.gz
 backup_pattern=$backup_output_dir/${backup_prefix}-*.tar.gz
