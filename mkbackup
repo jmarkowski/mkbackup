@@ -92,12 +92,13 @@ if [ -f $backup_file ]; then
 fi
 
 # Create a backup
-echo Archiving files ...
+echo "Archiving files ..."
+
 tar -C $backup_target_dir --exclude="$backup_pattern" -z -c -v -f $backup_file .
 chown $(id -u):$(id -g) $backup_file
 
 echo
-echo Created backup: $backup_file
+echo "Created backup: $backup_file"
 
 # Remove old files
 ls --sort=time $backup_pattern | \
