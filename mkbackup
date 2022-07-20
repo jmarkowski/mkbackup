@@ -10,7 +10,7 @@ script=$0
 #
 backup_output_dir=.
 backup_prefix=backup
-backup_count=10
+backup_count=
 
 function show_usage {
   HELP=$(cat <<_HELP
@@ -23,7 +23,7 @@ Options:
   -o <directory>  Output directory of backup file. (default=current directory)
   -l <name>       Name of prefix used to label backup file. (default='$backup_prefix')
   -n <int>        The maximum number of backup files to keep. Files beyond
-                  the limit will be automatically deleted. (default=$backup_count)
+                  the limit will be automatically deleted. (default=keep all files)
 
 _HELP
 )
@@ -92,14 +92,17 @@ if [ -f $backup_file ]; then
 fi
 
 # Create a backup
-echo Archiving files ...
-tar -C $backup_target_dir --exclude="$backup_pattern" -z -c -v -f $backup_file .
+echo "Archiving files ..."
+
+tar -C $backup_target_dir/.. --exclude="$backup_pattern" -z -c -v -f $backup_file $(basename $backup_target_dir)
 chown $(id -u):$(id -g) $backup_file
 
 echo
-echo Created backup: $backup_file
+echo "Created backup: $backup_file"
 
-# Remove old files
-ls --sort=time $backup_pattern | \
-  tail -n +$((backup_count+1)) | \
-  xargs --delimiter '\n' rm -f
+# Remove the last n backed up files if a backup count (n) is provided
+if [ -n "$backup_count" ]; then
+  ls --sort=time $backup_pattern | \
+    tail -n +$((backup_count+1)) | \
+    xargs --delimiter '\n' rm -f
+fi
