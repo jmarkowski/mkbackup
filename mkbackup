@@ -94,7 +94,7 @@ fi
 # Create a backup
 echo "Archiving files ..."
 
-tar -C $backup_target_dir --exclude="$backup_pattern" -z -c -v -f $backup_file .
+tar -C $backup_target_dir/.. --exclude="$backup_pattern" -z -c -v -f $backup_file $(basename $backup_target_dir)
 chown $(id -u):$(id -g) $backup_file
 
 echo
